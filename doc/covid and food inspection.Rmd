@@ -1,0 +1,16 @@
+---
+title: "Covid and Food Inspection"
+author: "Judy Wu"
+date: "`r Sys.Date()`"
+output: html_document
+runtime: shiny
+---
+
+```{r}
+#import dataset
+library(httr)
+library(jsonlite)
+res = GET("https://data.cityofnewyork.us/resource/43nn-pn8j.json")
+head(res$content)
+
+```
