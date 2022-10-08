@@ -66,30 +66,9 @@ spdf_data <- tidy(  spdf_file,
 )
 ```
 
+### Section I: Static Plot
 
 ### Section II: interactive map
-
-```{r}
-
-##### None Interactive map (Population by region)
-ggplot() +
-  geom_polygon(data=spdf_data %>%
-                 left_join(stats_df, c("id"="ZIPCODE")),
-               aes(x=long,
-                   y=lat,
-                   group=group,
-                   fill=POPULATION),
-               color="white",
-               size=.2) +
-  theme_void() +
-  coord_map() +
-  scale_fill_distiller(palette = "YlGnBu", direction = 1) +
-  labs(title="Population in New York City",
-       subtitle="Neighborhoods are filled by population",
-       fill="Population")
-```
-
-
 
 ```{r}
 
@@ -198,8 +177,6 @@ leaflet()%>%
 
 
 ```{r}
-
-
 
 Total_violation = 
   df%>%
@@ -356,24 +333,45 @@ score <- score%>%
 score_year <-group_split(score)
 names(score_year) <- c("2019","2020","2021","2022")
 
+getColor <- function(score) {
+  sapply(score$score, function(score) {
+  if(score >=100) {
+    "#93ae55"
+  } else if(score >=75) {
+    "#a9be77"
+  } else if(score>=50) {
+    "#d386b7"
+  } else if(score>=30){
+    "#dc6986"
+  } else{
+    "#d34467"
+  }
+  })
+}
 
 
 icons <- awesomeIcons(
   icon = "ios-close",
   library = "ion",
-  markerColor = colorNumeric(palette="YlOrBr", domain= score$score, na.color = 'transparent')
+  markerColor = getColor(score)
 )
 
+palette_purples <- colorRampPalette(colors = c("#bcbddc", "#54278f"))(6)
+pal <- colorNumeric(palette_purples,domain=score$score,na.color="transparent")
 leaflet()%>%
   addProviderTiles("CartoDB")%>%
-  addMarkers(
+  addCircleMarkers(
     data=score_year[[1]],
     lat = ~latitude,
     lng = ~longitude,
     popup = ~paste(dba,"Score:", score,
                    "<br>Cuisine:",cuisine_description,
                    "<br>Updated Time:", inspection_date,
-                   "<br>Critical Flag:", critical_flag)
+                   "<br>Critical Flag:", critical_flag),
+    fillColor = ~pal(score),
+    fillOpacity = 1,
+    radius = 6,
+    stroke = F
   )
 
 
@@ -386,7 +384,7 @@ leaflet()%>%
 
 
 ```{r}
-nc_pal= colorNumeric(palette="YlOrBr", domain= Total_spdf_file_2022@data$Total,na.color = 'transparent')
+nc_pal= colorNumeric(palette="Purples", domain= Total_spdf_file_2022@data$Total,na.color = 'transparent')
 ui <- navbarPage(
  theme = bs_theme(bootswatch = "litera"),
   "Food Inspectation",
@@ -400,7 +398,7 @@ ui <- navbarPage(
                                       "Number of Crital Violations"))),
                     column(6,selectInput("time","Year:",
                                     c("2019","2020","2021","2022")))),
-          fluidRow(leafletOutput("map",height = 1000))),
+          fluidRow(leafletOutput("map",height = 500))),
           
           
             tabPanel("Comparison between Years",
@@ -411,11 +409,11 @@ ui <- navbarPage(
                                     c("2019","2020","2021","2022"))),
                     column(4,selectInput("time2","Year:",
                                     c("2019","2020","2021","2022"),selected = "2020"))),
-                    fluidRow(column(6,leafletOutput("map_comp1",height=600)), column(6,leafletOutput("map_comp2",height=600)))),
+                    fluidRow(column(6,leafletOutput("map_comp1",height=500)), column(6,leafletOutput("map_comp2",height=500)))),
           
           tabPanel("Top 100 Restaurant",
                    fluidRow(selectInput("year","Top 100 Restaurant in Year: ",c("2019","2020","2021","2022"))),
-                   fluidRow(leafletOutput("top100",height = 1000)))),
+                   fluidRow(leafletOutput("top100",height = 500)))),
  
   tabPanel("Reference")
 )
@@ -470,14 +468,14 @@ server <- function(input, output,session){
       fillOpacity = 1 ,
       fillColor = ~nc_pal(Total),
       label = ~paste0 ('Total Violations : ' , Total),
-      group = '2022',
       highlight = highlightOptions(weight  = 3, color = "red", bringToFront =  T)
       )%>%
       addLegend( pal=nc_pal, values= violations[[input$type]][[input$time2]]$Total, opacity=0.9, title = "Count of Total Violation", position = "bottomleft" )
     })
     
     output$top100 <- renderLeaflet({
-      nc_pal= colorNumeric(palette="YlOrBr", domain= score_year[[1]]$score,na.color = 'transparent')
+     palette_purples <- colorRampPalette(colors = c("#bcbddc", "#54278f"))(6)
+     pal <- colorNumeric(palette_purples,domain=score$score,na.color="transparent")
      leaflet()%>%
   addProviderTiles("CartoDB")%>%
   addCircleMarkers(
@@ -488,9 +486,11 @@ server <- function(input, output,session){
                    "<br>Cuisine:",cuisine_description,
                    "<br>Updated Time:", inspection_date,
                    "<br>Critical Flag:", critical_flag),
-    fillColor = ~nc_pal(score),
+    fillColor = ~pal(score),
     fillOpacity = 1,
-    stroke = F)
+    stroke = F,
+    radius = 8) %>%
+       addLegend( pal=pal, values= score_year[[input$year]]$score, opacity=0.9, title = "Score Values", position = "bottomleft" )
 
     })
 }
