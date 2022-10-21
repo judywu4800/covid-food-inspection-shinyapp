@@ -1,6 +1,8 @@
-# ADS Project 1:  R Notebook on the history of philosophy
+# ADS Project 2: Shiny App Development
 
-### Code dev/lib Folder
+### Lib folder
 
-The lib directory contains various files with function definitions and computation codes for your data analysis. 
+The lib directory contains various files with function definitions and computation codes for data analysis.
+
+* `data_processing.R`: functions to create processed data and corresponding plots
 
