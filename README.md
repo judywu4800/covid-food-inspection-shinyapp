@@ -10,6 +10,8 @@ Term: Fall 2022
 
 + **Project title**: DOHMH New York City Restaurant Inspection Results
 
++ **Link of the Shiny App**:  https://judywu.shinyapps.io/foodinspection/
+
 + **Team members**:
 	+ Kieu-Giang Nguyen, kn2521@columbia.edu
 	+ Zhejing Shi, zs2524@columbia.edu
