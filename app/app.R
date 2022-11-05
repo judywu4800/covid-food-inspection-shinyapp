@@ -76,9 +76,9 @@ if (!require("htmltools")) {
 
 
 # Set working directory
-current_path <- rstudioapi::getActiveDocumentContext()$path
-setwd(dirname(current_path))
-getwd()
+#current_path <- rstudioapi::getActiveDocumentContext()$path
+#setwd(dirname(current_path))
+#getwd()
 
 #data preparation
 borough_list <- readRDS("output/borough_list.Rda")
